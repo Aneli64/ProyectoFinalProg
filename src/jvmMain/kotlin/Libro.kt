@@ -1,8 +1,8 @@
 class Libro(
-    private var titulo: String, private var calif: Double, private var autor: String, private var fech_lanz: String,
-    private var precio: Double
+    var titulo: String, var calif: Double, var autor: String, var fech_lanz: String,
+    var precio: Double
 ) {
     override fun toString(): String {
-        return "Libro(titulo=$titulo, calif=$calif, autor =$autor, fech_lanz=$fech_lanz, precio=$precio)"
+        return "$titulo,$calif,$autor,$fech_lanz,$precio)"
     }
 }
