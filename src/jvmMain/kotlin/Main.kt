@@ -21,15 +21,27 @@ import java.sql.DriverManager
 @Composable
 @Preview
 fun BookApp() {
+    //CONEXION A BD BIBLIOTECA
     val url = "jdbc:oracle:thin:@localhost:1521:xe"
     val usuario = "libros"
     val contraseña = "libros"
     val conn = DriverManager.getConnection(url, usuario, contraseña)
 
+    //LISTA INTERNA Y FILE EN DONDE ALMACENAREMOS LOS LIBROS
     val listaLibros = mutableListOf<Libro>()
     val file = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
 
-    //listaLibros.forEach { file.appendText("$it\n") } y al reves
+    //EXTRAEMOS DATOS SI LA LISTA YA CONTIENE LIBROS (AUNQUE YA CONTAMOS CON ESOS DATOS EN LA PROPIA BD)
+    if (file.readText().isNotEmpty()) {
+        file.forEachLine {
+            listaLibros.add(
+                Libro(
+                    it.split(",")[0], it.split(",")[1].toDouble(), it.split(",")[2],
+                    it.split(",")[3], it.split(",")[4].toDouble()
+                )
+            )
+        }
+    }
 
     MaterialTheme {
         var titulo by remember { mutableStateOf("") }
@@ -99,6 +111,7 @@ fun BookApp() {
                                 //creamos y almacenamos el libro en la lista libros
                                 val libro = Libro(titulo, calificacion.toDouble(), autor, fechaLanz, precio.toDouble())
                                 listaLibros.add(libro)
+
                                 //creamos la sentencia insert unido a una conexion previamente creada para guardar el libro en la base de datos
                                 val insert =
                                     conn.prepareStatement("INSERT INTO Biblioteca (titulo, calificacion, autor, fechaLanz, precio) VALUES (?, ?, ?, ?, ?)")
@@ -108,10 +121,8 @@ fun BookApp() {
                                 insert.setString(4, libro.fech_lanz)
                                 insert.setDouble(5, libro.precio)
                                 insert.executeUpdate()
+
                                 //una vez guardado, dejamos vacíos sus campos para introducir uno nuevo
-                                //faltaria guardarlo en un file
-
-
                                 titulo = ""
                                 calificacion = ""
                                 autor = ""
@@ -134,29 +145,20 @@ fun BookApp() {
                         }
                     }
                 }
+                //y lo añadimos a nuestro file para poder manipularlo mas adelante
+                var texto = ""
+                listaLibros.forEach { texto += "$it\n" }
+                file.writeText(texto)
             }
 
+            //Select de libros
             2 -> {
-                val regist = conn.createStatement()
+                var text = "" //sigamos con esto, pero hay que hacer una tabla para que se vea gucci
+                listaLibros.forEach { text += "$it\n" }
+                Text(text)
+                /*val regist = conn.createStatement()
                 val query = "SELECT * FROM BIBLIOTECA"
-                val select = regist.executeQuery(query)
-                Column {
-                    //while(select.next()) println(select.getString("titulo"))
-                    Row {
-                        while (select.next()) {
-                            Text(select.getString("titulo"))
-                            //Text(select.getString("calif"))
-                        }
-                    }
-                    Row {
-                        Button(onClick = {
-                            paginas = 0
-                        }) {
-                            Text("volver al inicio")
-                        }
-                    }
-                }
-
+                val select = regist.executeQuery(query)*/
             }
         }
     }

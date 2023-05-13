@@ -3,6 +3,6 @@ class Libro(
     var precio: Double
 ) {
     override fun toString(): String {
-        return "$titulo,$calif,$autor,$fech_lanz,$precio)"
+        return "$titulo,$calif,$autor,$fech_lanz,$precio"
     }
 }
