@@ -1,6 +1,8 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -134,6 +136,9 @@ fun BookApp() {
                             }
                             Button(onClick = {
                                 println(listaLibros.toList())
+                                /*var texto = ""
+                                listaLibros.forEach { texto += "$it\n" }
+                                Text(texto)*/
                             }) {
                                 Text("Show Books")
                             }
@@ -153,15 +158,34 @@ fun BookApp() {
 
             //Select de libros
             2 -> {
-                var text = "" //sigamos con esto, pero hay que hacer una tabla para que se vea gucci
-                listaLibros.forEach { text += "$it\n" }
-                Text(text)
-                /*val regist = conn.createStatement()
-                val query = "SELECT * FROM BIBLIOTECA"
-                val select = regist.executeQuery(query)*/
+                LazyColumn {
+                    LazyRow {//tendriamos que sacar los datos de select primero????
+                        Text(tabla(listaLibros))
+                    }
+                    LazyRow {
+                        Button(onClick = {
+                            paginas = 0
+                        }) {
+                            Text("volver al inicio")
+                        }
+                    }
+                }
             }
         }
     }
+}
+@Composable
+@Preview
+fun tabla(lista: MutableList<Libro>): String {
+    var texto = ""
+    val cadena1 = "-".repeat(20)
+    lista.forEach {
+        texto +=
+            cadena1 + "\n"
+        "| ${it.titulo} | ${it.calif} | ${it.autor}| ${it.fech_lanz}| ${it.precio} |" + "\n" +
+                cadena1
+    }
+    return texto
 }
 
 fun main() = application {
