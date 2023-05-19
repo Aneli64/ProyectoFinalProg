@@ -31,14 +31,6 @@ fun BookApp() {
     val contraseña = "libros"
     val conn = DriverManager.getConnection(url, usuario, contraseña)
 
-    //usuarios y contraseñas de la BD
-    val statement = conn.createStatement()
-    val resultado = statement.executeQuery("SELECT * FROM USERS")
-    val listaUser = mutableListOf<DatosUser>()
-    while(resultado.next()){
-        listaUser.add(DatosUser(resultado.getString("USUARIO"), resultado.getString("PASSWORD")))
-    }
-
     //LISTA INTERNA Y FILE EN DONDE ALMACENAREMOS LOS LIBROS
     val listaLibros = mutableListOf<Libro>()
     val file = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
@@ -59,15 +51,37 @@ fun BookApp() {
     }
 
     MaterialTheme {
+        //variables de atributos sobre libros a insertar
         var titulo by remember { mutableStateOf("") }
         var calificacion by remember { mutableStateOf("") }
         var autor by remember { mutableStateOf("") }
         var fechaLanz by remember { mutableStateOf("") }
         var precio by remember { mutableStateOf("") }
+
+        //variables para su uso en la pagina update
+        var libroEncontrado by remember { mutableStateOf(false) }
+        var tituloUpdate by remember { mutableStateOf("") }
+
+        //variables de login
         var user by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
-        var paginas by remember { mutableStateOf(20) }
+        var adminLogin by remember { mutableStateOf(false) }
 
+        //variable que nos indica la pagina en la que nos encontramos
+        var paginas by remember { mutableStateOf(20) }
+        //ESTARIA BIEN HACER UNA GUIA SOBRE LAS PAGINAS QUE LLEVAN A CADA COSA
+
+        //usuarios y contraseñas de la BD
+        val statement = conn.createStatement()
+        val resultado = statement.executeQuery("SELECT * FROM USERS")
+        val mapaUsers = mutableMapOf<String, String>()
+        while (resultado.next()) {
+            mapaUsers[resultado.getString("USUARIO")] = resultado.getString("PASSWORD")
+        }
+
+        //IMAGENES DE FONDO DE NUESTRA APP
+
+        //IMAGEN DE INICIO
         Image(
             painter = painterResource("bibliotec.jpg"),
             contentDescription = "imagenBiblioteca",
@@ -75,8 +89,9 @@ fun BookApp() {
         )
 
         when (paginas) {
-            //Caja 0 (Inicio)
+            //LOGIN (usuarios normales)
             20 -> {
+
                 Column {
                     Row {
                         Text("LOGIN", color = Color.Red, fontSize = 40.sp, textAlign = TextAlign.Center)
@@ -85,44 +100,69 @@ fun BookApp() {
                         TextField(value = user, onValueChange = { user = it }, label = { Text(text = "User") })
                     }
                     Row {
-                        TextField(value = password, onValueChange = { password = it }, label = { Text(text = "Password") })
+                        TextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text(text = "Password") })
                     }
                     Row {
+                        //extraemos los usuarios y contraseñas que tienen login en nuestra app
+                        //y lo almacenamos en un mapa para comprobar que nuestro login se encuentra en nuestra BD
                         Button(onClick = {
                             val userIN = DatosUser(user, password)
-                            print(userIN)
-                            //esto hay que refactorizarlo crack
-                            if (userIN.d1 == listaUser[0].d1 && userIN.d2 == listaUser[0].d2 || userIN.d1 == listaUser[1].d1 && userIN.d2 == listaUser[1].d2)
-                            {
-                                paginas = 0
-                            }
-                            else{
-                                paginas = 13
-                            }
+                            paginas = if (mapaUsers[userIN.d1] == userIN.d2) 0 else 13
                         }) {
                             Text("Aceptar")
                         }
                     }
                 }
             }
+
+            21 -> {
+                //ADMIN LOGIN
+                Column {
+                    Row {
+                        Text("ADMIN LOGIN", color = Color.Red, fontSize = 40.sp, textAlign = TextAlign.Center)
+                    }
+                    Row {
+                        TextField(value = user, onValueChange = { user = it }, label = { Text(text = "User") })
+                    }
+                    Row {
+                        TextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text(text = "Password") })
+                    }
+                    Button(onClick = {
+                        val userADMIN = DatosUser(user, password)
+                        paginas = if (userADMIN.d1 == "admin" && userADMIN.d2 == "admin") 7 else 13
+                    }) {
+                        Text("Aceptar")
+                    }
+                }
+            }
+
             13 -> {
                 //Pagina de errores
                 Column {
                     Row {
                         Text("usuario o contraseña incorrectos!")
                     }
-                    Row{
+                    Row {
                         Button(onClick = {
-                            paginas = 20
+                            paginas = if (adminLogin == true) 21 else 20
                         }) {
                             Text("volver al login")
-                            //estaria bien meter un contador de fallos para que cuando lleve 3 login erroneos salga de la app por ejemplo
                         }
                     }
                 }
             }
+
             0 -> {
+                //Caja 0 (Inicio)
                 Box {
+                    //definimos adminLogin a True para que al fallar en admin Login nos devuelva a su respectivo login de error
+                    adminLogin = true
                     Column {
                         Row {
                             Text("BIBLIOTECA", color = Color.Blue, fontSize = 40.sp, textAlign = TextAlign.Center)
@@ -146,6 +186,13 @@ fun BookApp() {
                                 paginas = 3
                             }) {
                                 Text("Inf libros")
+                            }
+                        }
+                        Row {
+                            Button(onClick = {
+                                paginas = 6
+                            }) {
+                                Text("Alterar datos de los libros")
                             }
                         }
                     }
@@ -210,7 +257,7 @@ fun BookApp() {
                 file.writeText(texto)
             }
 
-            //Select de libros
+            //Libros que se encuentran almacenados
             2 -> {
                 Box {
                     LazyColumn {
@@ -252,9 +299,9 @@ fun BookApp() {
                         }
                         Row {
                             Button(onClick = {
-                                paginas = 0
+                                paginas = 3
                             }) {
-                                Text("volver al inicio")
+                                Text("Atras")
                             }
                         }
                     }
@@ -290,9 +337,64 @@ fun BookApp() {
                     }
                 }
             }
+
+            6 -> {
+                Column {
+                    Row {
+                        Text("Introduzca el nombre de algun libro para alterar sus datos")
+                    }
+                    Row {
+                        Button(onClick = {
+                            paginas = 21
+                        }) {
+                            Text("Alterar datos")
+                        }
+                    }
+                    Row {
+                        Button(onClick = {
+                            paginas = 0
+                        }) {
+                            Text("volver al inicio")
+                        }
+                    }
+                }
+            }
+
+            7 -> { //hace falta una variable que cuando login admin sea true, no vuelva a pedir su login
+                Column {
+                    Row {
+                        Text("ALTERAR DATOS")
+                    }
+                    Row {
+                        TextField(
+                            value = titulo,
+                            onValueChange = { titulo = it },
+                            label = { Text(text = "Titulo") })
+                    }
+                    Row {
+                        Button(onClick = {
+                            for (item in listaLibros) if (item.titulo == titulo) {
+                                libroEncontrado = true
+                                tituloUpdate = item.titulo
+                            }
+                            if (libroEncontrado) paginas = 8
+                        }) {
+                            Text("Alterar sus datos")
+                        }
+                    }
+                }
+            }
+
+            8 -> {
+                val operac = conn.createStatement()
+                val select = operac.executeQuery("SELECT * FROM Biblioteca")
+                while(select.next()){
+                    select.updateString("TITULO",tituloUpdate)
+                }
+                }
+            }
         }
     }
-}
 
 @Composable
 @Preview
@@ -311,21 +413,26 @@ fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
 
 @Composable
 @Preview
-fun minLibro(libros: MutableList<Libro>): String{
+fun minLibro(libros: MutableList<Libro>): String {
     var cadena = ""
     val libro = libros.sortedBy { it.calif }[0]
     cadena += "Libro con mayor calificacion" + "\n" + "-".repeat(28) + "\n" +
-            "| ${libro.titulo} | ${libro.calif} | ${libro.autor}| ${libro.fech_lanz}| ${libro.precio} |" + "\n" + "-".repeat(28)
+            "| ${libro.titulo} | ${libro.calif} | ${libro.autor}| ${libro.fech_lanz}| ${libro.precio} |" + "\n" + "-".repeat(
+        28
+    )
     return cadena
 }
+
 //representar tabla mas bonita wei
 @Composable
 @Preview
-fun maxLibro(libros: MutableList<Libro>): String{
+fun maxLibro(libros: MutableList<Libro>): String {
     var cadena = ""
-    val libro = libros.sortedBy { it.calif }[libros.size-1]
+    val libro = libros.sortedBy { it.calif }[libros.size - 1]
     cadena += "Libro con mayor calificacion" + "\n" + "-".repeat(28) + "\n" +
-            "| ${libro.titulo} | ${libro.calif} | ${libro.autor}| ${libro.fech_lanz}| ${libro.precio} |" + "\n" + "-".repeat(28)
+            "| ${libro.titulo} | ${libro.calif} | ${libro.autor}| ${libro.fech_lanz}| ${libro.precio} |" + "\n" + "-".repeat(
+        28
+    )
     return cadena
 }
 
