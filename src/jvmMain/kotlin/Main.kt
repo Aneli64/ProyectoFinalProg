@@ -31,6 +31,14 @@ fun BookApp() {
     val contraseña = "libros"
     val conn = DriverManager.getConnection(url, usuario, contraseña)
 
+    //usuarios y contraseñas de la BD
+    val statement = conn.createStatement()
+    val resultado = statement.executeQuery("SELECT * FROM USERS")
+    val listaUser = mutableListOf<DatosUser>()
+    while(resultado.next()){
+        listaUser.add(DatosUser(resultado.getString("USUARIO"), resultado.getString("PASSWORD")))
+    }
+
     //LISTA INTERNA Y FILE EN DONDE ALMACENAREMOS LOS LIBROS
     val listaLibros = mutableListOf<Libro>()
     val file = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
@@ -81,9 +89,16 @@ fun BookApp() {
                     }
                     Row {
                         Button(onClick = {
-
-                            paginas = 13
-
+                            val userIN = DatosUser(user, password)
+                            print(userIN)
+                            //esto hay que refactorizarlo crack
+                            if (userIN.d1 == listaUser[0].d1 && userIN.d2 == listaUser[0].d2 || userIN.d1 == listaUser[1].d1 && userIN.d2 == listaUser[1].d2)
+                            {
+                                paginas = 0
+                            }
+                            else{
+                                paginas = 13
+                            }
                         }) {
                             Text("Aceptar")
                         }
@@ -91,24 +106,17 @@ fun BookApp() {
                 }
             }
             13 -> {
-                //usuarios y contraseñas de la BD
-                val statement = conn.createStatement()
-                val resultado = statement.executeQuery("SELECT USUARIO, PASSWORD FROM USERS")
+                //Pagina de errores
                 Column {
                     Row {
-                        val lista = mutableListOf<String>()
-                        while(resultado.next()) {
-                            val user = resultado.getString("USUARIO")
-                            //val pw = resultado.getString("PASSWORD")
-                            lista.add(user)
-                        }
-                        Text(lista.toString())
+                        Text("usuario o contraseña incorrectos!")
                     }
-                    Row {
+                    Row{
                         Button(onClick = {
-                            paginas = 0
+                            paginas = 20
                         }) {
-                            Text("volver al inicio")
+                            Text("volver al login")
+                            //estaria bien meter un contador de fallos para que cuando lleve 3 login erroneos salga de la app por ejemplo
                         }
                     }
                 }
