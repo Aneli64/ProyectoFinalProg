@@ -1,21 +1,16 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -25,52 +20,39 @@ import java.sql.DriverManager
 @Composable
 @Preview
 fun BookApp() {
-    //CONEXION A BD BIBLIOTECA
+    //CONEXION A BD
     val url = "jdbc:oracle:thin:@localhost:1521:xe"
     val usuario = "libros"
     val contraseña = "libros"
-    val conn = DriverManager.getConnection(url, usuario, contraseña)
+    val conexBD = DriverManager.getConnection(url, usuario, contraseña)
 
     //LISTA INTERNA Y FILE EN DONDE ALMACENAREMOS LOS LIBROS
     val listaLibros = mutableListOf<Libro>()
-    val file = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
+    val fileLibros = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
 
     //usuarios y contraseñas de la BD
-    val statement = conn.createStatement()
-    val resultado = statement.executeQuery("SELECT * FROM USERS")
+    val statement = conexBD.createStatement()
+    val select = statement.executeQuery("SELECT * FROM USERS")
     val mapaUsers = mutableMapOf<String, String>()
-    while (resultado.next()) {
-        mapaUsers[resultado.getString("USUARIO")] = resultado.getString("PASSWORD")
+    while (select.next()) {
+        mapaUsers[select.getString("USUARIO")] = select.getString("PASSWORD")
     }
 
     //SELECT DE LIBROS (PARA SU USO EN SELECT, UPDATE Y DELETE)
-    val operac = conn.createStatement()
-    val selectBibl = statement.executeQuery("SELECT * FROM Biblioteca")
+    val statmentAddFileLista = conexBD.createStatement()
+    val addToFileList = statmentAddFileLista.executeQuery("SELECT * FROM Biblioteca")
 
-    //EXTRAEMOS DATOS SI LA LISTA YA CONTIENE LIBROS (AUNQUE YA CONTAMOS CON ESOS DATOS EN LA PROPIA BD)
-    while (selectBibl.next()) {
+    //EXTRAEMOS LIBROS DE LA BD Y LOS AÑADIMOS A LA LISTA INTERNA Y AL FILE
+    while (addToFileList.next()) {
         val libroIn = Libro(
-            selectBibl.getString("TITULO"), selectBibl.getDouble("CALIFICACION"),
-            selectBibl.getString("AUTOR"),
-            selectBibl.getString("FECHALANZ"),
-            selectBibl.getDouble("PRECIO")
+            addToFileList.getString("TITULO"), addToFileList.getDouble("CALIFICACION"),
+            addToFileList.getString("AUTOR"),
+            addToFileList.getString("FECHALANZ"),
+            addToFileList.getDouble("PRECIO")
         )
         listaLibros.add(libroIn)
     }
-    addTextFile(listaLibros, file)
-    /*if (file.readText().isNotEmpty()) {
-        file.forEachLine {
-            listaLibros.add(
-                Libro(
-                    it.split(",")[0],
-                    it.split(",")[1].toDouble(),
-                    it.split(",")[2],
-                    it.split(",")[3],
-                    it.split(",")[4].toDouble()
-                )
-            )
-        }
-    }*/
+    addTextFile(listaLibros, fileLibros)
 
     MaterialTheme {
         //variables de atributos sobre libros a insertar
@@ -254,7 +236,7 @@ fun BookApp() {
 
                                 //creamos la sentencia insert unido a una conexion previamente creada para guardar el libro en la base de datos
                                 val insert =
-                                    conn.prepareStatement("INSERT INTO Biblioteca (titulo, calificacion, autor, fechaLanz, precio) VALUES (?, ?, ?, ?, ?)")
+                                    conexBD.prepareStatement("INSERT INTO Biblioteca (titulo, calificacion, autor, fechaLanz, precio) VALUES (?, ?, ?, ?, ?)")
                                 insert.setString(1, libro.titulo)
                                 insert.setDouble(2, libro.calif)
                                 insert.setString(3, libro.autor)
@@ -281,23 +263,23 @@ fun BookApp() {
                     }
                 }
                 //y lo añadimos a nuestro file para poder manipularlo mas adelante
-                addTextFile(listaLibros, file)
+                addTextFile(listaLibros, fileLibros)
             }
 
             //Libros que se encuentran almacenados
             2 -> {
                 Box {
                     Column {
-                            Row {
-                                Text(tabla(listaLibros))
+                        Row {
+                            Text(tabla(listaLibros))
+                        }
+                        Row {
+                            Button(onClick = {
+                                paginas = 0
+                            }) {
+                                Text("volver al inicio")
                             }
-                            Row {
-                                Button(onClick = {
-                                    paginas = 0
-                                }) {
-                                    Text("volver al inicio")
-                                }
-                            }
+                        }
                     }
                 }
             }
@@ -324,7 +306,7 @@ fun BookApp() {
                         }
                         Row {
                             Button(onClick = {
-                                paginas = 3
+                                paginas = 0
                             }) {
                                 Text("Atras")
                             }
@@ -428,29 +410,31 @@ fun BookApp() {
                             label = { Text(text = "Nuevo dato") })
                     }
                     Row {
+                        val statmentUpdate = conexBD.createStatement()
+                        val insert = statmentUpdate.executeQuery("SELECT * FROM Biblioteca")
                         Button(onClick = { //corregir que calif y precio solo se pueda insertar con coma para decimales!!!
-                            when (atributoIN) { //esto se podria refactorizar verdad figura??
-                                "titulo" -> operac.executeQuery("Update Biblioteca Set TITULO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
-                                "calificacion" -> operac.executeQuery("Update Biblioteca Set CALIFICACION='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
-                                "autor" -> operac.executeQuery("Update Biblioteca Set AUTOR='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
-                                "fechaLanz" -> operac.executeQuery("Update Biblioteca Set FECHALANZ='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
-                                "precio" -> operac.executeQuery("Update Biblioteca Set PRECIO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                            when (atributoIN) {
+                                "titulo" -> statmentUpdate.executeQuery("Update Biblioteca Set TITULO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "calificacion" -> statmentUpdate.executeQuery("Update Biblioteca Set CALIFICACION='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "autor" -> statmentUpdate.executeQuery("Update Biblioteca Set AUTOR='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "fechaLanz" -> statmentUpdate.executeQuery("Update Biblioteca Set FECHALANZ='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "precio" -> statmentUpdate.executeQuery("Update Biblioteca Set PRECIO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
                             }
 
                             //aplicamos los cambios a la lista interna
                             listaLibros.clear()
-                            while (selectBibl.next()) {
+                            while (insert.next()) {
                                 val libroIn = Libro(
-                                    selectBibl.getString("TITULO"), selectBibl.getDouble("CALIFICACION"),
-                                    selectBibl.getString("AUTOR"),
-                                    selectBibl.getString("FECHALANZ"),
-                                    selectBibl.getDouble("PRECIO")
+                                    insert.getString("TITULO"), insert.getDouble("CALIFICACION"),
+                                    insert.getString("AUTOR"),
+                                    insert.getString("FECHALANZ"),
+                                    insert.getDouble("PRECIO")
                                 )
                                 listaLibros.add(libroIn)
                             }
 
                             //y tambien a nuestro file de libros almacenados
-                            addTextFile(listaLibros, file)
+                            addTextFile(listaLibros, fileLibros)
 
                         }) {
                             Text("Update")
@@ -465,6 +449,7 @@ fun BookApp() {
                     }
                 }
             }
+
             9 -> {
                 Column {
                     Row {
@@ -477,19 +462,23 @@ fun BookApp() {
                             label = { Text(text = "Nombre del libro") })
                     }
                     Row {
+                        val statmentDelete = conexBD.createStatement()
+                        val delete = statmentDelete.executeQuery("SELECT * FROM Biblioteca")
                         Button(onClick = {
                             for (item in listaLibros) if (item.titulo == libroDelete) {
                                 libroEncontradoDelete = true
-                                libroDelete = item.titulo
                             }
                             if (libroEncontradoDelete) {
-                                while(selectBibl.next()){
-                                    operac.executeQuery("DELETE FROM Biblioteca Where TITULO = '$libroDelete'")
+                                val query = "DELETE FROM Biblioteca Where TITULO = '$libroDelete'"
+                                while (delete.next()) {
+                                    statmentDelete.executeQuery(query)
                                 }
+                                val borrado = conexBD.prepareStatement(query)
+                                borrado.executeUpdate()
                                 listaLibros.removeIf { it.titulo == libroDelete }
 
                                 //añadimos cambios de nuevo al file
-                                addTextFile(listaLibros, file)
+                                addTextFile(listaLibros, fileLibros)
 
                             }
                         }) {
@@ -508,11 +497,13 @@ fun BookApp() {
         }
     }
 }
+
 fun addTextFile(listaLibros: MutableList<Libro>, file: File) {
     var textIN = ""
     listaLibros.forEach { textIN += "$it\n" }
     file.writeText(textIN)
 }
+
 @Composable
 @Preview
 fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
