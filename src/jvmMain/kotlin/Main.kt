@@ -35,8 +35,30 @@ fun BookApp() {
     val listaLibros = mutableListOf<Libro>()
     val file = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
 
+    //usuarios y contraseñas de la BD
+    val statement = conn.createStatement()
+    val resultado = statement.executeQuery("SELECT * FROM USERS")
+    val mapaUsers = mutableMapOf<String, String>()
+    while (resultado.next()) {
+        mapaUsers[resultado.getString("USUARIO")] = resultado.getString("PASSWORD")
+    }
+
+    //SELECT DE LIBROS (PARA SU USO EN SELECT, UPDATE Y DELETE)
+    val operac = conn.createStatement()
+    val selectBibl = statement.executeQuery("SELECT * FROM Biblioteca")
+
     //EXTRAEMOS DATOS SI LA LISTA YA CONTIENE LIBROS (AUNQUE YA CONTAMOS CON ESOS DATOS EN LA PROPIA BD)
-    if (file.readText().isNotEmpty()) {
+    while (selectBibl.next()) {
+        val libroIn = Libro(
+            selectBibl.getString("TITULO"), selectBibl.getDouble("CALIFICACION"),
+            selectBibl.getString("AUTOR"),
+            selectBibl.getString("FECHALANZ"),
+            selectBibl.getDouble("PRECIO")
+        )
+        listaLibros.add(libroIn)
+    }
+    addTextFile(listaLibros, file)
+    /*if (file.readText().isNotEmpty()) {
         file.forEachLine {
             listaLibros.add(
                 Libro(
@@ -48,7 +70,7 @@ fun BookApp() {
                 )
             )
         }
-    }
+    }*/
 
     MaterialTheme {
         //variables de atributos sobre libros a insertar
@@ -61,6 +83,13 @@ fun BookApp() {
         //variables para su uso en la pagina update
         var libroEncontrado by remember { mutableStateOf(false) }
         var tituloUpdate by remember { mutableStateOf("") }
+        var atributoIN by remember { mutableStateOf("") }
+        var nuevoDatoUpdate by remember { mutableStateOf("") }
+        //mirar si estos dos grupos de variables se pueden unir para ahorrar codigo
+
+        //variables para su uso en la pagina delete
+        var libroEncontradoDelete by remember { mutableStateOf(false) }
+        var libroDelete by remember { mutableStateOf("") }
 
         //variables de login
         var user by remember { mutableStateOf("") }
@@ -70,14 +99,6 @@ fun BookApp() {
         //variable que nos indica la pagina en la que nos encontramos
         var paginas by remember { mutableStateOf(20) }
         //ESTARIA BIEN HACER UNA GUIA SOBRE LAS PAGINAS QUE LLEVAN A CADA COSA
-
-        //usuarios y contraseñas de la BD
-        val statement = conn.createStatement()
-        val resultado = statement.executeQuery("SELECT * FROM USERS")
-        val mapaUsers = mutableMapOf<String, String>()
-        while (resultado.next()) {
-            mapaUsers[resultado.getString("USUARIO")] = resultado.getString("PASSWORD")
-        }
 
         //IMAGENES DE FONDO DE NUESTRA APP
 
@@ -120,6 +141,7 @@ fun BookApp() {
 
             21 -> {
                 //ADMIN LOGIN
+                //ESTARIA BIEN PONER QUE SI YA ACCEDE COMO ADMIN DE PRIMERAS, NO PIDA LUEGO SU LOGIN DE ADMIN
                 Column {
                     Row {
                         Text("ADMIN LOGIN", color = Color.Red, fontSize = 40.sp, textAlign = TextAlign.Center)
@@ -150,7 +172,7 @@ fun BookApp() {
                     }
                     Row {
                         Button(onClick = {
-                            paginas = if (adminLogin == true) 21 else 20
+                            paginas = if (adminLogin) 21 else 20
                         }) {
                             Text("volver al login")
                         }
@@ -193,6 +215,13 @@ fun BookApp() {
                                 paginas = 6
                             }) {
                                 Text("Alterar datos de los libros")
+                            }
+                        }
+                        Row {
+                            Button(onClick = {
+                                paginas = 9
+                            }) {
+                                Text("Borrar libros")
                             }
                         }
                     }
@@ -252,16 +281,13 @@ fun BookApp() {
                     }
                 }
                 //y lo añadimos a nuestro file para poder manipularlo mas adelante
-                var texto = ""
-                listaLibros.forEach { texto += "$it\n" }
-                file.writeText(texto)
+                addTextFile(listaLibros, file)
             }
 
             //Libros que se encuentran almacenados
             2 -> {
                 Box {
-                    LazyColumn {
-                        item {
+                    Column {
                             Row {
                                 Text(tabla(listaLibros))
                             }
@@ -272,7 +298,6 @@ fun BookApp() {
                                     Text("volver al inicio")
                                 }
                             }
-                        }
                     }
                 }
             }
@@ -360,7 +385,7 @@ fun BookApp() {
                 }
             }
 
-            7 -> { //hace falta una variable que cuando login admin sea true, no vuelva a pedir su login
+            7 -> {
                 Column {
                     Row {
                         Text("ALTERAR DATOS")
@@ -386,16 +411,108 @@ fun BookApp() {
             }
 
             8 -> {
-                val operac = conn.createStatement()
-                val select = operac.executeQuery("SELECT * FROM Biblioteca")
-                while(select.next()){
-                    select.updateString("TITULO",tituloUpdate)
+                Column {
+                    Row {
+                        Text("Introduzca el campo que desea alterar y su nuevo dato")
+                    }
+                    Row {
+                        TextField(
+                            value = atributoIN,
+                            onValueChange = { atributoIN = it },
+                            label = { Text(text = "Campo a alterar (titulo, calificacion, autor, fechaLanz, precio)") })
+                    }
+                    Row {
+                        TextField(
+                            value = nuevoDatoUpdate,
+                            onValueChange = { nuevoDatoUpdate = it },
+                            label = { Text(text = "Nuevo dato") })
+                    }
+                    Row {
+                        Button(onClick = { //corregir que calif y precio solo se pueda insertar con coma para decimales!!!
+                            when (atributoIN) { //esto se podria refactorizar verdad figura??
+                                "titulo" -> operac.executeQuery("Update Biblioteca Set TITULO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "calificacion" -> operac.executeQuery("Update Biblioteca Set CALIFICACION='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "autor" -> operac.executeQuery("Update Biblioteca Set AUTOR='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "fechaLanz" -> operac.executeQuery("Update Biblioteca Set FECHALANZ='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                                "precio" -> operac.executeQuery("Update Biblioteca Set PRECIO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
+                            }
+
+                            //aplicamos los cambios a la lista interna
+                            listaLibros.clear()
+                            while (selectBibl.next()) {
+                                val libroIn = Libro(
+                                    selectBibl.getString("TITULO"), selectBibl.getDouble("CALIFICACION"),
+                                    selectBibl.getString("AUTOR"),
+                                    selectBibl.getString("FECHALANZ"),
+                                    selectBibl.getDouble("PRECIO")
+                                )
+                                listaLibros.add(libroIn)
+                            }
+
+                            //y tambien a nuestro file de libros almacenados
+                            addTextFile(listaLibros, file)
+
+                        }) {
+                            Text("Update")
+                        }
+                    }
+                    Row {
+                        Button(onClick = {
+                            paginas = 0
+                        }) {
+                            Text("volver al inicio")
+                        }
+                    }
                 }
+            }
+            9 -> {
+                Column {
+                    Row {
+                        Text("BORRAR LIBROS")
+                    }
+                    Row {
+                        TextField(
+                            value = libroDelete,
+                            onValueChange = { libroDelete = it },
+                            label = { Text(text = "Nombre del libro") })
+                    }
+                    Row {
+                        Button(onClick = {
+                            for (item in listaLibros) if (item.titulo == libroDelete) {
+                                libroEncontradoDelete = true
+                                libroDelete = item.titulo
+                            }
+                            if (libroEncontradoDelete) {
+                                while(selectBibl.next()){
+                                    operac.executeQuery("DELETE FROM Biblioteca Where TITULO = '$libroDelete'")
+                                }
+                                listaLibros.removeIf { it.titulo == libroDelete }
+
+                                //añadimos cambios de nuevo al file
+                                addTextFile(listaLibros, file)
+
+                            }
+                        }) {
+                            Text("Borrar libro")
+                        }
+                    }
+                    Row {
+                        Button(onClick = {
+                            paginas = 0
+                        }) {
+                            Text("volver al inicio")
+                        }
+                    }
                 }
             }
         }
     }
-
+}
+fun addTextFile(listaLibros: MutableList<Libro>, file: File) {
+    var textIN = ""
+    listaLibros.forEach { textIN += "$it\n" }
+    file.writeText(textIN)
+}
 @Composable
 @Preview
 fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
@@ -423,7 +540,6 @@ fun minLibro(libros: MutableList<Libro>): String {
     return cadena
 }
 
-//representar tabla mas bonita wei
 @Composable
 @Preview
 fun maxLibro(libros: MutableList<Libro>): String {
