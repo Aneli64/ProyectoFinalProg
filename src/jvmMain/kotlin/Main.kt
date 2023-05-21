@@ -1,5 +1,6 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -7,10 +8,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
@@ -89,14 +93,6 @@ fun BookApp() {
         //variable que nos indica la pagina en la que nos encontramos
         var paginas by remember { mutableStateOf(20) }
 
-        //IMAGENES DE FONDO DE NUESTRA APP
-        //IMAGEN DE INICIO
-        Image(
-            painter = painterResource("bibliotec.jpg"),
-            contentDescription = "imagenBiblioteca",
-            modifier = Modifier.fillMaxSize()
-        )
-
         //GUIA DE PAGINAS
         /*
         - 20,21 -> PAGINAS DE LOGIN
@@ -105,17 +101,34 @@ fun BookApp() {
         - 1 -> INSERT DE LIBROS
         - 2 -> SELECT DE LIBROS
         - 3,4,5 -> INFORMACION VARIA SOBRE LIBROS (MAYOR, MENOR CALIFICACION)
-        - 6,7,8 -> ALTERAR LIBROS
-        - 9 -> DELETE DE LIBROS
+        - 6,7 -> ALTERAR LIBROS
+        - 8 -> DELETE DE LIBROS
          */
 
         when (paginas) {
-            //LOGIN (usuarios normales)
             20 -> {
+                //LOGIN (usuarios normales)
 
-                Column {
+                //IMAGEN DE LOGIN
+                Image(
+                    painter = painterResource("loginFondo.png"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
+                Column(
+                    Modifier.padding(200.dp),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                ) {
                     Row {
-                        Text("LOGIN", color = Color.Red, fontSize = 40.sp, textAlign = TextAlign.Center)
+                        Text(
+                            "LOGIN",
+                            color = Color.Red,
+                            fontSize = 40.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
+
                     }
                     Row {
                         TextField(value = user, onValueChange = { user = it }, label = { Text(text = "User") })
@@ -132,7 +145,7 @@ fun BookApp() {
                         Button(onClick = {
                             val userIN = DatosUser(user, password)
                             paginas = if (mapaUsers[userIN.d1] == userIN.d2) 0 else 13
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("Aceptar")
                         }
                     }
@@ -141,10 +154,22 @@ fun BookApp() {
 
             21 -> {
                 //ADMIN LOGIN
-                //ESTARIA BIEN PONER QUE SI YA ACCEDE COMO ADMIN DE PRIMERAS, NO PIDA LUEGO SU LOGIN DE ADMIN
+
+                //IMAGEN DE LOGIN
+                Image(
+                    painter = painterResource("loginFondo.png"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
                     Row {
-                        Text("ADMIN LOGIN", color = Color.Red, fontSize = 40.sp, textAlign = TextAlign.Center)
+                        Text(
+                            "ADMIN LOGIN",
+                            color = Color.Red,
+                            fontSize = 40.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                     Row {
                         TextField(value = user, onValueChange = { user = it }, label = { Text(text = "User") })
@@ -157,8 +182,8 @@ fun BookApp() {
                     }
                     Button(onClick = {
                         val userADMIN = DatosUser(user, password)
-                        paginas = if (userADMIN.d1 == "admin" && userADMIN.d2 == "admin") 7 else 13
-                    }) {
+                        paginas = if (userADMIN.d1 == "admin" && userADMIN.d2 == "admin") 6 else 13
+                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                         Text("Aceptar")
                     }
                 }
@@ -168,12 +193,18 @@ fun BookApp() {
                 //Pagina de errores
                 Column {
                     Row {
-                        Text("usuario o contraseña incorrectos!")
+                        Text(
+                            "usuario o contraseña incorrectos!",
+                            color = Color.Red,
+                            fontSize = 40.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                     Row {
                         Button(onClick = {
                             paginas = if (adminLogin) 21 else 20
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("volver al login")
                         }
                     }
@@ -182,45 +213,59 @@ fun BookApp() {
 
             0 -> {
                 //Caja 0 (Inicio)
+
+                //IMAGEN EN LA APP
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
+
                 Box {
                     //definimos adminLogin a True para que al fallar en admin Login nos devuelva a su respectivo login de error
                     adminLogin = true
                     Column {
                         Row {
-                            Text("BIBLIOTECA", color = Color.Blue, fontSize = 40.sp, textAlign = TextAlign.Center)
+                            Text(
+                                "BIBLIOTECA",
+                                color = Color.Red,
+                                fontSize = 40.sp,
+                                textAlign = TextAlign.Center,
+                                fontFamily = FontFamily.Monospace
+                            )
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 1
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Ir a inserc")
                             }
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 2
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Ir a select")
                             }
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 3
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Inf libros")
                             }
                         }
                         Row {
                             Button(onClick = {
-                                paginas = 6
-                            }) {
+                                paginas = 21
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Alterar datos de los libros")
                             }
                         }
                         Row {
                             Button(onClick = {
-                                paginas = 9
-                            }) {
+                                paginas = 8
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Borrar libros")
                             }
                         }
@@ -269,12 +314,12 @@ fun BookApp() {
                                 fechaLanz = ""
                                 precio = ""
 
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Add Book")
                             }
                             Button(onClick = {
                                 paginas = 0
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("volver al inicio")
                             }
                         }
@@ -294,7 +339,7 @@ fun BookApp() {
                         Row {
                             Button(onClick = {
                                 paginas = 0
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("volver al inicio")
                             }
                         }
@@ -306,26 +351,32 @@ fun BookApp() {
                 Box {
                     Column {
                         Row {
-                            Text("Informacion varia acerca de los libros")
+                            Text(
+                                "Informacion varia acerca de los libros",
+                                color = Color.Red,
+                                fontSize = 40.sp,
+                                textAlign = TextAlign.Center,
+                                fontFamily = FontFamily.Monospace
+                            )
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 4
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Libro con mayor calif")
                             }
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 5
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Libro con menor calif")
                             }
                         }
                         Row {
                             Button(onClick = {
                                 paginas = 0
-                            }) {
+                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                                 Text("Atras")
                             }
                         }
@@ -341,7 +392,7 @@ fun BookApp() {
                     Row {
                         Button(onClick = {
                             paginas = 0
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("volver al inicio")
                         }
                     }
@@ -356,7 +407,7 @@ fun BookApp() {
                     Row {
                         Button(onClick = {
                             paginas = 0
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("volver al inicio")
                         }
                     }
@@ -366,29 +417,13 @@ fun BookApp() {
             6 -> {
                 Column {
                     Row {
-                        Text("Introduzca el nombre de algun libro para alterar sus datos")
-                    }
-                    Row {
-                        Button(onClick = {
-                            paginas = 21
-                        }) {
-                            Text("Alterar datos")
-                        }
-                    }
-                    Row {
-                        Button(onClick = {
-                            paginas = 0
-                        }) {
-                            Text("volver al inicio")
-                        }
-                    }
-                }
-            }
-
-            7 -> {
-                Column {
-                    Row {
-                        Text("ALTERAR DATOS")
+                        Text(
+                            "Alterar Datos",
+                            color = Color.Red,
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                     Row {
                         TextField(
@@ -402,18 +437,24 @@ fun BookApp() {
                                 libroEncontrado = true
                                 tituloUpdate = item.titulo
                             }
-                            if (libroEncontrado) paginas = 8
-                        }) {
+                            if (libroEncontrado) paginas = 7
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("Alterar sus datos")
                         }
                     }
                 }
             }
 
-            8 -> {
+            7 -> {
                 Column {
                     Row {
-                        Text("Introduzca el campo que desea alterar y su nuevo dato")
+                        Text(
+                            "Introduzca el campo que desea alterar y su nuevo dato",
+                            color = Color.Red,
+                            fontSize = 24.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                     Row {
                         TextField(
@@ -428,7 +469,7 @@ fun BookApp() {
                             label = { Text(text = "Nuevo dato") })
                     }
                     Row {
-                        Button(onClick = { //corregir que calif y precio solo se pueda insertar con coma para decimales!!!
+                        Button(onClick = {
                             when (atributoIN) {
                                 "titulo" -> statmentUpdate.executeQuery("Update Biblioteca Set TITULO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
                                 "calificacion" -> statmentUpdate.executeQuery("Update Biblioteca Set CALIFICACION='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
@@ -437,9 +478,8 @@ fun BookApp() {
                                 "precio" -> statmentUpdate.executeQuery("Update Biblioteca Set PRECIO='$nuevoDatoUpdate' Where TITULO = '$tituloUpdate'")
                             }
 
-                            //aplicamos los cambios a la lista interna
-                            //val statmentAddFileLista = conexBD.createStatement()
                             val update = statement.executeQuery("SELECT * FROM Biblioteca")
+                            //aplicamos los cambios a la lista interna
                             listaLibros.clear()
                             while (update.next()) {
                                 val libroIn = Libro(
@@ -450,33 +490,34 @@ fun BookApp() {
                                 )
                                 listaLibros.add(libroIn)
                             }
-                            /*val query = "DELETE FROM Biblioteca Where TITULO = '$libroDelete'"
-                            while (delete.next()) {
-                                statmentDelete.executeQuery(query)
-                            }
-                            val borrado = conexBD.prepareStatement(query)*/
 
-                            //y tambien a nuestro file de libros almacenados
+                            //aplicamos los cambios a nuestro file de libros almacenados
                             addTextFile(listaLibros, fileLibros)
 
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("Update")
                         }
                     }
                     Row {
                         Button(onClick = {
                             paginas = 0
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("volver al inicio")
                         }
                     }
                 }
             }
 
-            9 -> {
+            8 -> {
                 Column {
                     Row {
-                        Text("BORRAR LIBROS")
+                        Text(
+                            "BORRAR LIBROS",
+                            color = Color.Red,
+                            fontSize = 40.sp,
+                            textAlign = TextAlign.Center,
+                            fontFamily = FontFamily.Monospace
+                        )
                     }
                     Row {
                         TextField(
@@ -504,14 +545,14 @@ fun BookApp() {
                                 addTextFile(listaLibros, fileLibros)
 
                             }
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("Borrar libro")
                         }
                     }
                     Row {
                         Button(onClick = {
                             paginas = 0
-                        }) {
+                        }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
                             Text("volver al inicio")
                         }
                     }
@@ -521,12 +562,14 @@ fun BookApp() {
     }
 }
 
+//Funcion que utilizaremos para añadir rapidamente la lista de libros existentes con sus recientes cambios a nuestro File
 fun addTextFile(listaLibros: MutableList<Libro>, file: File) {
     var textIN = ""
     listaLibros.forEach { textIN += "$it\n" }
     file.writeText(textIN)
 }
 
+//Funcion que utilizaremos para representar nuestros libros en una tabla
 @Composable
 @Preview
 fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
@@ -542,6 +585,7 @@ fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
     return texto
 }
 
+//Funcion que nos muestra el libro con la minima calificacion
 @Composable
 @Preview
 fun minLibro(libros: MutableList<Libro>): String {
@@ -554,6 +598,7 @@ fun minLibro(libros: MutableList<Libro>): String {
     return cadena
 }
 
+//Funcion que nos muestra el libro con la maxima calificacion
 @Composable
 @Preview
 fun maxLibro(libros: MutableList<Libro>): String {
