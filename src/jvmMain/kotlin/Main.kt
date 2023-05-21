@@ -35,7 +35,8 @@ fun BookApp() {
 
     //LISTA INTERNA Y FILE EN DONDE ALMACENAREMOS LOS LIBROS
     val listaLibros = mutableListOf<Libro>()
-    val fileLibros = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt") //DEFINIR RUTA ABSOLUTA PLS
+    //val fileLibros = File("C:\\Users\\Usuario\\Desktop\\proyectoPorg\\libros.txt")
+    val fileLibros = File("proyectoPorg\\libros.txt")
 
     //usuarios y contraseñas de la BD
     val select = statement.executeQuery("SELECT * FROM USERS")
@@ -190,13 +191,20 @@ fun BookApp() {
             }
 
             13 -> {
-                //Pagina de errores
+                //PAGINA DE ERRORES
+
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
                     Row {
                         Text(
                             "usuario o contraseña incorrectos!",
                             color = Color.Red,
-                            fontSize = 40.sp,
+                            fontSize = 24.sp,
                             textAlign = TextAlign.Center,
                             fontFamily = FontFamily.Monospace
                         )
@@ -214,7 +222,7 @@ fun BookApp() {
             0 -> {
                 //Caja 0 (Inicio)
 
-                //IMAGEN EN LA APP
+                //IMAGEN FONDO
                 Image(
                     painter = painterResource("loginBib.jpg"),
                     contentDescription = "login",
@@ -234,47 +242,63 @@ fun BookApp() {
                                 fontFamily = FontFamily.Monospace
                             )
                         }
-                        Row {
-                            Button(onClick = {
-                                paginas = 1
-                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
-                                Text("Ir a inserc")
+                            Row {
+                                Row(modifier = Modifier.padding(20.dp)) {
+                                    Button(onClick = {
+                                        paginas = 1
+                                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
+                                        Text("Ir a inserc")
+                                    }
+                                }
+                                Row(modifier = Modifier.padding(20.dp)) {
+                                    Button(onClick = {
+                                        paginas = 2
+                                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
+                                        Text("Ir a select")
+                                    }
+                                }
+                                Row(modifier = Modifier.padding(20.dp)) {
+                                    Button(onClick = {
+                                        paginas = 3
+                                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
+                                        Text("Inf libros")
+                                    }
+                                }
+                                Row(modifier = Modifier.padding(20.dp)) {
+                                    Button(onClick = {
+                                        paginas = 21
+                                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
+                                        Text("Alterar datos de los libros")
+                                    }
+                                }
+                                Row(modifier = Modifier.padding(20.dp)) {
+                                    Button(onClick = {
+                                        paginas = 8
+                                    }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
+                                        Text("Borrar libros")
+                                    }
+                                }
                             }
-                        }
+                        //IMAGEN AÑADIDA
                         Row {
-                            Button(onClick = {
-                                paginas = 2
-                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
-                                Text("Ir a select")
-                            }
-                        }
-                        Row {
-                            Button(onClick = {
-                                paginas = 3
-                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
-                                Text("Inf libros")
-                            }
-                        }
-                        Row {
-                            Button(onClick = {
-                                paginas = 21
-                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
-                                Text("Alterar datos de los libros")
-                            }
-                        }
-                        Row {
-                            Button(onClick = {
-                                paginas = 8
-                            }, colors = ButtonDefaults.buttonColors(backgroundColor = Color.Red)) {
-                                Text("Borrar libros")
-                            }
+                            Image(
+                                painter = painterResource("libros.jpg"),
+                                contentDescription = "libros",
+                            )
                         }
                     }
                 }
 
+
             }
             //Caja 1 (Insercción de libros)
             1 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Box {
                     Column {
                         TextField(value = titulo, onValueChange = { titulo = it }, label = { Text(text = "Titulo") })
@@ -331,9 +355,15 @@ fun BookApp() {
 
             //Libros que se encuentran almacenados
             2 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Box {
                     Column {
-                        Row {
+                        Row(modifier = Modifier.background(color = Color.Red)) {
                             Text(tabla(listaLibros))
                         }
                         Row {
@@ -348,16 +378,24 @@ fun BookApp() {
             }
 
             3 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Box {
                     Column {
-                        Row {
-                            Text(
-                                "Informacion varia acerca de los libros",
-                                color = Color.Red,
-                                fontSize = 40.sp,
-                                textAlign = TextAlign.Center,
-                                fontFamily = FontFamily.Monospace
-                            )
+                        Box(modifier = Modifier.background(color = Color.Black)) {
+                            Row {
+                                Text(
+                                    "Informacion varia acerca de los libros",
+                                    color = Color.Red,
+                                    fontSize = 40.sp,
+                                    textAlign = TextAlign.Center,
+                                    fontFamily = FontFamily.Monospace
+                                )
+                            }
                         }
                         Row {
                             Button(onClick = {
@@ -385,8 +423,14 @@ fun BookApp() {
             }
 
             4 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
-                    Row {
+                    Row (modifier = Modifier.background(color = Color.Red)){
                         Text(maxLibro(listaLibros))
                     }
                     Row {
@@ -400,8 +444,14 @@ fun BookApp() {
             }
 
             5 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
-                    Row {
+                    Row (modifier = Modifier.background(color = Color.Red)){
                         Text(minLibro(listaLibros))
                     }
                     Row {
@@ -415,6 +465,12 @@ fun BookApp() {
             }
 
             6 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
                     Row {
                         Text(
@@ -446,6 +502,12 @@ fun BookApp() {
             }
 
             7 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
                     Row {
                         Text(
@@ -509,6 +571,12 @@ fun BookApp() {
             }
 
             8 -> {
+                //IMAGEN FONDO
+                Image(
+                    painter = painterResource("loginBib.jpg"),
+                    contentDescription = "login",
+                    modifier = Modifier.fillMaxSize().fillMaxHeight()
+                )
                 Column {
                     Row {
                         Text(
@@ -591,7 +659,7 @@ fun tabla(lista: MutableList<Libro>): String { //intentar que quede mas bonita
 fun minLibro(libros: MutableList<Libro>): String {
     var cadena = ""
     val libro = libros.sortedBy { it.calif }[0]
-    cadena += "Libro con mayor calificacion" + "\n" + "-".repeat(28) + "\n" +
+    cadena += "Libro con mayor calificacion" + "\n" + "-".repeat(8) + "\n" +
             "| ${libro.titulo} | ${libro.calif} | ${libro.autor}| ${libro.fech_lanz}| ${libro.precio} |" + "\n" + "-".repeat(
         28
     )
